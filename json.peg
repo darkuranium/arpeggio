@@ -1,0 +1,11 @@
+//$x=($a=A B $c=C) -> (X $x $a $c)
+//
+
+json:   object / array                          ;
+
+object: LBRACE ($p~=pair (COMMA $p~=pair)*)? RBRACE     ->  (OBJECT $p...);
+pair:   $k=STRING COLON $v=value                        ->  (PAIR   $k $v);
+
+array:  LARRAY ($i~=value (COMMA $i~=value)*)? RARRAY   ->  (ARRAY  $i...);
+
+value:  object / array / STRING / NUMBER / BOOL / NULL  ;

@@ -1,0 +1,5 @@
+prog: a / b / c;
+
+a: A &A;
+b: A !C;
+c: A $c=C*;

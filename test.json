@@ -1,0 +1,8 @@
+{
+    "name": "Test JSON File",
+    "array": [true, 2, 3, "four", 5],
+    "stuff": {
+        "XX": "M",
+        "XY": "F"
+    }
+}

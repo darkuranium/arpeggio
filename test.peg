@@ -1,0 +1,5 @@
+//$x=($a=A B $c=C) -> (X $x $a $c)
+//
+
+//test:   $x=(STRING $y=NUMBER (BOOL NULL)*)  ->  (TEST $x $y);
+test:   $x=STRING $y=NUMBER BOOL NULL  ->  (TEST $x $y);
