@@ -1,6 +1,13 @@
+# Python files
 __pycache__/
 *.py[cod]
 *$py.class
 
+# backup files
 *~
 *.bak
+
+# generated files
+tests/main
+tests/main.exe
+*.GEN.*
