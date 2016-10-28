@@ -1,4 +1,4 @@
-#include "output.h"
+#include "output.GEN.h"
 
 #include <stdlib.h>
 #include <string.h>

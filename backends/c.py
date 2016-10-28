@@ -13,8 +13,8 @@ class CStream(object):
         self.indent = 0
     def printo(self, obj):
         self.data.append((self.indent, obj))
-    #def prints(self, *args):
-    #    self.data.append((self.indent, ' '.join(args)))
+    def prints(self, *args):
+        self.data.append((self.indent, ' '.join(args)))
     def printsln(self, *args):
         self.data.append((self.indent, ' '.join(args) + '\n'))
 
@@ -110,18 +110,16 @@ class CLenProxy(CObject):
 # factor*       <save-vars,save-pos> @start: body <ok:copy-vars,goto-start><err:load-pos>
 # factor+       body <save-vars,save-pos> @start: body <ok:copy-vars,goto-start><err:load-pos>
 class CBackend(Backend):
-    def __init__(self, name, **kwargs):
+    def __init__(self, **kwargs):
         super(CBackend, self).__init__()
-        self.name = name
+        self.name = kwargs['name']
         self.S = DynamicStack(State())
 
         self.h = CStream()
         self.c = CStream()
 
-        self.S.name = name
-        self.S.alist_type = 'ANodeList'
-        self.S.anode_type = 'ANode*'
-        self.S.lexer_type = 'Lexer*'
+        for key, val in kwargs.items():
+            setattr(self.S, key, val)
 
     def _factor_body(self, f):
         op = f.sema.op if f.sema else None
@@ -368,42 +366,18 @@ class CBackend(Backend):
         self.S.frule_name = g.frule.name
         self.S.slen = CLenProxy(self.S)
 
-        self.h.printsln('''\
-#ifndef GRAMMAR_H_
-#define GRAMMAR_H_
-
-#include "common.h"
-bool parse({alist_type}* alist, {lexer_type} lexer);
-
-#endif /* GRAMMAR_H_ */'''.format(**self.S.dict))
+        self.h.prints(self.S.preamble_h)
+        self.h.printsln('bool parse({alist_type}* alist, {lexer_type} lexer);'.format(**self.S.dict))
+        self.h.prints(self.S.postamble_h)
 
         with open(self.name + '.h', 'w') as h:
             h.write(self.h.generate())
 
+        self.c.prints(self.S.preamble_c)
+
         self.c.printsln('''\
 #include "{name}.h"
-#include <assert.h>
-
-#include <string.h>
-#define MKNODE_TOKEN(TOK)       anode_create(TOK.kind)
-#define MKNODE_SEM(KIND)        anode_create(#KIND)
-#define MKNODE_NIL()            NULL
-#define LEXER_NEXT(lex)         if(!(lex)->next((lex))) return false;
-#define LEXER_CHECK(lex, KIND)  (!strcmp((lex)->tok.kind, (#KIND)))
-#define LEXER_VALUE(lex)        ((lex)->tok)
-#define LEXER_GETPOS(lex)       ((lex)->pos)
-#define LEXER_SETPOS(lex, POS)  ((lex)->pos = (POS))
-
-/*#ifdef GEN_DEBUG*/
-#if 1
-#include <stdio.h>
-#define GEN_PRINTF(args) (fprintf args, fflush(stderr))
-#else
-#define GEN_PRINTF(args)
-#endif
-
-static ANodeList elist = {{}};
-'''.format(**self.S.dict))
+#include <assert.h>'''.format(**self.S.dict))
 
         for r in g.rules:
             self.c.printsln('static bool p_{rule_name}({alist_type}* alist, {lexer_type} lexer);'.format(rule_name=r, **self.S.dict))
@@ -424,6 +398,8 @@ bool parse({alist_type}* alist, {lexer_type} lexer)
 
 \treturn true;
 }}'''.format(**self.S.dict))
+
+        self.c.prints(self.S.postamble_c)
 
         with open(self.name + '.c', 'w') as c:
             c.write(self.c.generate())

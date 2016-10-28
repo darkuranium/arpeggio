@@ -3,7 +3,7 @@ CFLAGS?=-g -Wall -Wno-unused-variable -Wno-unused-label -Wno-unused-but-set-vari
 
 all: main
 
-main: main.c common.c output.c
+main: main.c common.c output.GEN.c
 	gcc $(CFLAGS) -omain $+
 
 run: main
