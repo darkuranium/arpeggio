@@ -1,8 +1,8 @@
-# PEGgio
+# Arpeggio
 
-***Warning:*** *PEGgio is alpha software! Bugs are to be expected at this point in its development.*
+***Warning:*** *Arpeggio is alpha software! Bugs are to be expected at this point in its development.*
 
-PEGgio is an advanced PEG ([Parsing Expression Grammar](https://en.wikipedia.org/wiki/Parsing_expression_grammar)) tool supporting the following main features:
+Arpeggio is an advanced PEG ([Parsing Expression Grammar](https://en.wikipedia.org/wiki/Parsing_expression_grammar)) tool supporting the following main features:
 
 - support for multiple language backends (currently, only a C backend exists, while Python and Javascript backends are planned Soon&trade;)
 - direct AST transformation rules
