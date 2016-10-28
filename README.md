@@ -37,7 +37,9 @@ The tool is released under the 2-clause BSD license. This does ***not*** affect 
 ## Planned Features
 
 - language backends:
-    - C (already implemented, but needs lookahead support)
+    - C (already implemented, but needs improvement)
+        - lookahead support
+        - zero warnings on `-Wall`
     - Python
     - Javascript
     - *(any other; I accept contributions)*
