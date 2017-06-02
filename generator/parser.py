@@ -1,5 +1,4 @@
 from generator.grammar import *
-from generator.lexer import Lexer
 
 class Parser(object):
     def __init__(self, lexer):
