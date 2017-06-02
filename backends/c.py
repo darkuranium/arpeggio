@@ -132,13 +132,13 @@ class CBackend(Backend):
             self.c.printsln('{stat_error}'.format(**self.S.dict))
             self.c.indent -= 1
             if op == '=':
-                self.c.printsln('{var_o} = alist_append(elist, MKNODE_TOKEN(LEXER_VALUE(lexer)));'.format(**self.S.dict))
+                self.c.printsln('{var_o} = alist_append(MKLIST_EMPTY(), MKNODE_TOKEN(LEXER_VALUE(lexer)));'.format(**self.S.dict))
             else:
                 self.c.printsln('{var_o} = alist_append({var_o}, MKNODE_TOKEN(LEXER_VALUE(lexer)));'.format(**self.S.dict))
             self.c.printsln('LEXER_NEXT(lexer);')
         elif f.kind == 'rule':
             if op == '=':
-                self.c.printsln('{var_o} = elist;'.format(**self.S.dict))
+                self.c.printsln('{var_o} = MKLIST_EMPTY();'.format(**self.S.dict))
             self.c.printsln('if(!p_{value}(&{var_o}, lexer))'.format(value=f.value, **self.S.dict))
             self.c.indent += 1
             self.c.printsln('{stat_error}'.format(**self.S.dict))
@@ -162,7 +162,7 @@ class CBackend(Backend):
             self.c.printo(self.S.var_ok)
             self.S.stat_ok = '{var_ok} = true;'.format(**self.S.dict)
 
-            self.S.var_pos = CVarDecl('LexerPos', 'P{slen}_{index}'.format(index=f.index, **self.S.dict), 'LEXER_GETPOS(lexer)')
+            self.S.var_pos = CVarDecl(self.S.lexer_pos_type, 'P{slen}_{index}'.format(index=f.index, **self.S.dict), 'LEXER_GETPOS(lexer)')
             self.c.printo(self.S.var_pos)
 
             self.S.stat_error = 'break;'
@@ -177,10 +177,10 @@ class CBackend(Backend):
             self.c.indent += 1
 
             self.S.vars = {}
-            self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}_{index}'.format(index=f.index, **self.S.dict), 'elist')
+            self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}_{index}'.format(index=f.index, **self.S.dict), 'MKLIST_EMPTY()')
             for name, var in self.S[-2].vars.items():
                 if not f.sema or name != f.sema.name:
-                    self.S.vars[name] = CVarDecl(self.S.alist_type, 'V{slen}_{var_name}'.format(var_name=name, **self.S.dict), 'elist')
+                    self.S.vars[name] = CVarDecl(self.S.alist_type, 'V{slen}_{var_name}'.format(var_name=name, **self.S.dict), 'MKLIST_EMPTY()')
                     self.c.printo(self.S.vars[name])
             if f.sema:
                 self.S.vars[f.sema.name] = self.S.var_o
@@ -191,7 +191,7 @@ class CBackend(Backend):
             self.S.vars = {}
             for name, var in self.S[-2].vars.items():
                 self.S.vars[name] = var
-            self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}_{index}'.format(index=f.index, **self.S.dict), 'elist')
+            self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}_{index}'.format(index=f.index, **self.S.dict), 'MKLIST_EMPTY()')
             self.S.vars[f.sema.name] = self.S.var_o
             self.c.printo(self.S.var_o)
 
@@ -208,7 +208,7 @@ class CBackend(Backend):
 
             if f.sema:
                 if f.sema.op == '=':
-                    self.c.printsln('{pvar} = alist_concat(elist, {var_o});'.format(pvar=self.S[-2].vars[f.sema.name], **self.S.dict))
+                    self.c.printsln('{pvar} = alist_concat(MKLIST_EMPTY(), {var_o});'.format(pvar=self.S[-2].vars[f.sema.name], **self.S.dict))
                 else:
                     self.c.printsln('{pvar} = alist_concat({pvar}, {var_o});'.format(pvar=self.S[-2].vars[f.sema.name], **self.S.dict))
             else:
@@ -225,7 +225,7 @@ class CBackend(Backend):
                 self.c.printsln('}')
         elif f.sema:
             if f.sema.op == '=':
-                self.c.printsln('{pvar} = alist_concat(elist, {var_o});'.format(pvar=self.S[-2].vars[f.sema.name], **self.S.dict))
+                self.c.printsln('{pvar} = alist_concat(MKLIST_EMPTY(), {var_o});'.format(pvar=self.S[-2].vars[f.sema.name], **self.S.dict))
             else:
                 self.c.printsln('{pvar} = alist_concat({pvar}, {var_o});'.format(pvar=self.S[-2].vars[f.sema.name], **self.S.dict))
 
@@ -281,9 +281,9 @@ class CBackend(Backend):
         # $$$ TODO: Move saving vars to function
         self.S.vars = {}
         for name, kind in s.sem_vnames.items():
-            self.S.vars[name] = CVarDecl(self.S.alist_type, 'V{slen}_{var_name}'.format(var_name=name, **self.S.dict), 'elist')
+            self.S.vars[name] = CVarDecl(self.S.alist_type, 'V{slen}_{var_name}'.format(var_name=name, **self.S.dict), 'MKLIST_EMPTY()')
             self.c.printo(self.S.vars[name])
-        self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}'.format(**self.S.dict), 'elist')
+        self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}'.format(**self.S.dict), 'MKLIST_EMPTY()')
         self.c.printo(self.S.var_o)
 
         super(CBackend, self).on_sequence(s)
@@ -315,7 +315,7 @@ class CBackend(Backend):
         self.c.printsln('/* <expr %s> */' % e.id)
         self.S.push()
 
-        self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}'.format(**self.S.dict), 'elist')
+        self.S.var_o = CVarDecl(self.S.alist_type, 'O{slen}'.format(**self.S.dict), 'MKLIST_EMPTY()')
         self.c.printo(self.S.var_o)
 
         self.S.var_ok = CVarDecl('bool', 'ok{slen}'.format(**self.S.dict), 'false')
@@ -324,7 +324,7 @@ class CBackend(Backend):
         self.S.stat_ok = '{var_ok} = true;'.format(**self.S.dict)
 
         if len(e.alts) > 1:
-            self.S.var_pos = CVarDecl('LexerPos', 'P{slen}'.format(**self.S.dict), 'LEXER_GETPOS(lexer)')
+            self.S.var_pos = CVarDecl(self.S.lexer_pos_type, 'P{slen}'.format(**self.S.dict), 'LEXER_GETPOS(lexer)')
             self.c.printo(self.S.var_pos)
 
         super(CBackend, self).on_expr(e)
@@ -391,7 +391,7 @@ bool parse({alist_type}* alist, {lexer_type} lexer)
 {{
 \tLEXER_NEXT(lexer);
 
-\tif(alist) *alist = elist;
+\tif(alist) *alist = MKLIST_EMPTY();
 
 \tif(!p_{frule_name}(alist, lexer)) return false;
 \tif(!LEXER_CHECK(lexer, EOF)) return false;
