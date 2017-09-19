@@ -1,4 +1,3 @@
-from __future__ import print_function
 import copy
 
 from generator.grammar import *
@@ -11,7 +10,7 @@ import importlib
 
 Backend = importlib.import_module('backends.c').Backend
 
-with open('json.peg', 'rb') as f:
+with open('json.peg', 'r') as f:
 #with open('predtest.peg', 'rb') as f:
 #gwith open('test.peg', 'rb') as f:
     cfg = ConfigParser()

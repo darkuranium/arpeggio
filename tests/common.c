@@ -8,7 +8,7 @@
 
 ANode* anode_create(const char* kind)
 {
-    static ANode InitNode;
+    static const ANode InitNode = {};
 
     ANode* node = malloc(sizeof(ANode));
     *node = InitNode;
